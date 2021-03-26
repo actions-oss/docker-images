@@ -29,30 +29,34 @@
     ],
     "builders": [
         {
-            "type": "azure-arm",
-            "client_id": "{{user `client_id`}}",
-            "client_secret": "{{user `client_secret`}}",
-            "subscription_id": "{{user `subscription_id`}}",
-            "tenant_id": "{{user `tenant_id`}}",
-            "location": "{{user `location`}}",
-            "vm_size": "{{user `vm_size`}}",
-            "resource_group_name": "{{user `resource_group`}}",
-            "storage_account": "{{user `storage_account`}}",
-            "temp_resource_group_name": "{{user `temp_resource_group_name`}}",
-            "capture_container_name": "images",
-            "capture_name_prefix": "{{user `capture_name_prefix`}}",
-            "virtual_network_name": "{{user `virtual_network_name`}}",
-            "virtual_network_resource_group_name": "{{user `virtual_network_resource_group_name`}}",
-            "virtual_network_subnet_name": "{{user `virtual_network_subnet_name`}}",
-            "private_virtual_network_with_public_ip": "{{user `private_virtual_network_with_public_ip`}}",
-            "os_type": "Linux",
-            "image_publisher": "canonical",
-            "image_offer": "0001-com-ubuntu-server-focal",
-            "image_sku": "20_04-lts",
-            "os_disk_size_gb": "86"
+            "type": "docker",
+            "image": "ubuntu:20.04",
+            "commit": true,
+            "privileged": true,
+            "volumes": {
+                "/var/run/docker.sock": "/var/run/docker.sock"
+            },
+            "author": "me@hackerc.at",
+            "fix_upload_owner": true
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "docker-tag",
+            "repository": "catthehacker/runner",
+            "tag": "20.04"
         }
     ],
     "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "dpkg-reconfigure debconf --frontend=noninteractive",
+                "apt-get -yq update",
+                "apt-get -yq install lsb-release sudo rsync wget apt-utils"
+            ],
+            "execute_command": "sh -c '{{ .Vars }} {{ .Path }}'"
+        },
         {
             "type": "shell",
             "inline": [
@@ -199,8 +203,30 @@
                 "{{template_dir}}/scripts/installers/swift.sh",
                 "{{template_dir}}/scripts/installers/cmake.sh",
                 "{{template_dir}}/scripts/installers/codeql-bundle.sh",
-                "{{template_dir}}/scripts/installers/containers.sh",
-                "{{template_dir}}/scripts/installers/dotnetcore-sdk.sh",
+                "{{template_dir}}/scripts/installers/containers.sh"
+            ],
+            "environment_vars": [
+                "HELPER_SCRIPTS={{user `helper_script_folder`}}",
+                "INSTALLER_SCRIPT_FOLDER={{user `installer_script_folder`}}",
+                "DEBIAN_FRONTEND=noninteractive"
+            ],
+            "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+        },
+        {
+            "type": "shell",
+            "scripts": [
+                "{{template_dir}}/scripts/installers/Install-DotNet.ps1"
+            ],
+            "environment_vars": [
+                "HELPER_SCRIPTS={{user `helper_script_folder`}}",
+                "INSTALLER_SCRIPT_FOLDER={{user `installer_script_folder`}}",
+                "DEBIAN_FRONTEND=noninteractive"
+            ],
+            "execute_command": "sudo sh -c '{{ .Vars }} pwsh -f {{ .Path }}'"
+        },
+        {
+            "type": "shell",
+            "scripts": [
                 "{{template_dir}}/scripts/installers/erlang.sh",
                 "{{template_dir}}/scripts/installers/firefox.sh",
                 "{{template_dir}}/scripts/installers/gcc.sh",
@@ -329,10 +355,10 @@
         },
         {
             "type": "shell",
-            "scripts":[
+            "scripts": [
                 "{{template_dir}}/scripts/installers/post-deployment.sh"
             ],
-            "environment_vars":[
+            "environment_vars": [
                 "HELPER_SCRIPT_FOLDER={{user `helper_script_folder`}}",
                 "INSTALLER_SCRIPT_FOLDER={{user `installer_script_folder`}}",
                 "IMAGE_FOLDER={{user `image_folder`}}"
@@ -341,7 +367,7 @@
         },
         {
             "type": "shell",
-            "scripts":[
+            "scripts": [
                 "{{template_dir}}/scripts/installers/validate-disk-space.sh"
             ],
             "environment_vars": [

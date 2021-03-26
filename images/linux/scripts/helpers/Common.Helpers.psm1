@@ -64,3 +64,108 @@ function Get-AndroidPackages {
 function Get-EnvironmentVariable($variable) {
     return [System.Environment]::GetEnvironmentVariable($variable)
 }
+
+function Set-EnvironmentVariable($Variable, $Value) {
+    return [System.Environment]::SetEnvironmentVariable($Variable, $Value)
+}
+
+function Join-EnvironmentVariable($Values) {
+    return ($Values -join [System.IO.Path]::PathSeparator)
+}
+
+function Add-EnvironmentVariable($Variable, $Value) {
+    ($Variable, $Value) -join '=' | sudo tee -a /etc/environment
+}
+
+function Update-EnvironmentFile() {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [String]$VariableName,
+        [Parameter(Mandatory)]
+        [String]$VariableValue
+    )
+    if ($Null -eq $VariableName) {
+        return 1
+    }
+    Write-Debug $VariableName
+
+    $EnvContent = [System.Collections.Generic.Dictionary[String, String]]::New()
+
+    Get-Content -LiteralPath '/etc/environment' | ForEach-Object {
+        Write-Debug $_
+        $VarName, $VarValue = $_ -split '='
+        $EnvContent.Add($VarName, $VarValue)
+    }
+
+    if ($Null -eq $EnvContent[$VariableName]) {
+        $EnvContent.Add($VariableName, $VariableValue)
+    } else {
+        Write-Debug $EnvContent[$VariableName]
+        $EnvContent[$VariableName] = $VariableValue
+    }
+
+    ($EnvContent.Keys, $EnvContent.Values) -join '=' | sudo tee /etc/environment
+
+    return $LASTEXITCODE
+}
+
+function Edit-Environment {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [String]$VariableName,
+        [Parameter(Mandatory)]
+        [String]$Value,
+        [Parameter(Mandatory)]
+        [ValidateSet('ReturnMerge', 'ReturnAppend', 'ReturnPrepend', 'Merge', 'Append', 'Prepend', 'Set', 'Replace', 'Add')]
+        [String]$Action
+    )
+    
+    if ($Action -notin @('Set', 'Replace', 'Add')) {
+        $ExistingValue = Get-EnvironmentVariable -Variable $VariableName
+    }
+
+    switch ($Action) {
+        { $_ -in @('ReturnMerge', 'ReturnAppend') } {
+            return (Join-EnvironmentVariable ($ExistingValue, $Value))
+        }
+
+        { $_ -in @('ReturnPrepend') } {
+            return (Join-EnvironmentVariable ($Value, $ExistingValue))
+        }
+
+        { $_ -in @('Merge', 'Append') } {
+            $NewValue = (Join-EnvironmentVariable ($ExistingValue, $Value))
+            break
+        }
+
+        { $_ -in @('Prepend') } {
+            $NewValue = (Join-EnvironmentVariable ($Value, $ExistingValue))
+            break
+        }
+
+        { $_ -in @('Set', 'Replace', 'Add') } {
+            $NewValue = $Value
+            break
+        }
+
+        Default {
+            return
+        }
+    }
+
+    return (Update-EnvironmentFile -VariableName $VariableName -VariableValue $NewValue)
+}
+
+function Update-Environment {
+    $Env = Get-Content -LiteralPath /etc/environment
+    $Env | ForEach-Object {
+        $Name, $Value = $_ -split "="
+        if ($Name -eq 'PATH') {
+            Set-EnvironmentVariable -Name $Name -Value (Edit-Environment -VariableName PATH -Value $Value -Action ReturnMerge)
+        } else {
+            Set-EnvironmentVariable -Name $Name -Value $Value
+        }
+    }
+}

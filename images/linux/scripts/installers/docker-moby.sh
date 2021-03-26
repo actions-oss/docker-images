@@ -20,9 +20,11 @@ else
     echo "Docker ($docker_package) is already installed"
 fi
 
-# Enable docker.service
-systemctl is-active --quiet docker.service || systemctl start docker.service
-systemctl is-enabled --quiet docker.service || systemctl enable docker.service
+if [[ ! -f /run/systemd/container ]]; then
+    # Enable docker.service
+    systemctl is-active --quiet docker.service || systemctl start docker.service
+    systemctl is-enabled --quiet docker.service || systemctl enable docker.service
+fi
 
 # Docker daemon takes time to come up after installing
 sleep 10
@@ -31,7 +33,7 @@ docker info
 # If credentials are provided, attempt to log into Docker Hub
 # with a paid account to avoid Docker Hub's rate limit.
 if [ "${DOCKERHUB_LOGIN}" ] && [ "${DOCKERHUB_PASSWORD}" ]; then
-  docker login --username "${DOCKERHUB_LOGIN}" --password "${DOCKERHUB_PASSWORD}"
+    docker login --username "${DOCKERHUB_LOGIN}" --password "${DOCKERHUB_PASSWORD}"
 fi
 
 # Pull images
