@@ -1,6 +1,6 @@
 function Get-CommandResult {
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string] $Command,
         [switch] $Multiline
     )
@@ -8,7 +8,7 @@ function Get-CommandResult {
     $stdout = & bash -c "$Command 2>&1"
     $exitCode = $LASTEXITCODE
     return @{
-        Output = If ($Multiline -eq $true) { $stdout } else { [string]$stdout }
+        Output   = If ($Multiline -eq $true) { $stdout } else { [string]$stdout }
         ExitCode = $exitCode
     }
 }
@@ -77,7 +77,7 @@ function Add-EnvironmentVariable($Variable, $Value) {
     ($Variable, $Value) -join '=' | sudo tee -a /etc/environment
 }
 
-function Update-EnvironmentFile() {
+function Update-EnvironmentFile {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -98,12 +98,8 @@ function Update-EnvironmentFile() {
         $EnvContent.Add($VarName, $VarValue)
     }
 
-    if ($Null -eq $EnvContent[$VariableName]) {
-        $EnvContent.Add($VariableName, $VariableValue)
-    } else {
-        Write-Debug $EnvContent[$VariableName]
-        $EnvContent[$VariableName] = $VariableValue
-    }
+    Write-Debug $EnvContent
+    ${EnvContent}.${VariableName} = $VariableValue
 
     ($EnvContent.Keys, $EnvContent.Values) -join '=' | sudo tee /etc/environment
 

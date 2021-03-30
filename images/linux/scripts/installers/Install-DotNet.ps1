@@ -82,7 +82,7 @@ foreach ($SDKVersion in $sortedSDKs) {
 Add-EnvironmentVariable -Variable 'DOTNET_SKIP_FIRST_TIME_EXPERIENCE' -Value 1
 Add-EnvironmentVariable -Variable 'DOTNET_NOLOGO' -Value 1
 Add-EnvironmentVariable -Variable 'DOTNET_MULTILEVEL_LOOKUP' -Value 0
-Edit-Environment -Variable 'PATH' -Value '/home/runner/.dotnet/tools' -Action 'Prepend'
+#Edit-Environment -Variable 'PATH' -Value '/home/runner/.dotnet/tools' -Action 'Prepend'
 
 'export PATH="$PATH:$HOME/.dotnet/tools"' | Tee-Object -FilePath '/etc/skel/.bashrc' -Append
 
