@@ -228,6 +228,7 @@
         {
             "type": "shell",
             "scripts": [
+                "{{template_dir}}/scripts/installers/erlang.sh",
                 "{{template_dir}}/scripts/installers/firefox.sh",
                 "{{template_dir}}/scripts/installers/gcc.sh",
                 "{{template_dir}}/scripts/installers/gfortran.sh",
@@ -316,14 +317,6 @@
         },
         {
             "type": "shell",
-            "expect_disconnect": true,
-            "scripts": [
-                "{{template_dir}}/scripts/base/reboot.sh"
-            ],
-            "execute_command": "/bin/sh -c '{{ .Vars }} {{ .Path }}'"
-        },
-        {
-            "type": "shell",
             "pause_before": "60s",
             "start_retry_timeout": "10m",
             "scripts": [
@@ -335,6 +328,13 @@
             "type": "shell",
             "script": "{{template_dir}}/scripts/base/apt-mock-remove.sh",
             "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+        },
+        {
+            "type": "shell",
+            "inline": [
+                "(echo;echo)|cpan"
+            ],
+            "execute_command": "sh -c '{{ .Vars }} {{ .Path }}'"
         },
         {
             "type": "shell",
@@ -373,27 +373,6 @@
             "environment_vars": [
                 "RUN_VALIDATION={{user `run_validation_diskspace`}}"
             ]
-        },
-        {
-            "type": "file",
-            "source": "{{template_dir}}/config/ubuntu2004.conf",
-            "destination": "/tmp/"
-        },
-        {
-            "type": "shell",
-            "inline": [
-                "mkdir -p /etc/vsts",
-                "cp /tmp/ubuntu2004.conf /etc/vsts/machine_instance.conf"
-            ],
-            "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-        },
-        {
-            "type": "shell",
-            "inline": [
-                "sleep 30",
-                "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
-            ],
-            "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'"
         }
     ]
 }

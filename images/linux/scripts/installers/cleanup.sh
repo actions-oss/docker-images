@@ -8,10 +8,12 @@ before=$(df / -Pm | awk 'NR==2{print $4}')
 apt-get clean
 rm -rf /tmp/*
 
-# journalctl
-if command -v journalctl; then
-    journalctl --rotate
-    journalctl --vacuum-time=1s
+if [[ ! -f /run/systemd/container ]]; then
+    # journalctl
+    if command -v journalctl; then
+        journalctl --rotate
+        journalctl --vacuum-time=1s
+    fi
 fi
 
 # delete all .gz and rotated file
@@ -25,9 +27,9 @@ find /var/log/ -type f -exec cp /dev/null {} \;
 after=$(df / -Pm | awk 'NR==2{print $4}')
 
 # display size
- echo "Before: $before MB"
- echo "After : $after MB"
- echo "Delta : $(($after-$before)) MB"
+echo "Before: $before MB"
+echo "After : $after MB"
+echo "Delta : $(($after - $before)) MB"
 
 # delete symlink for tests running
 rm -f /usr/local/bin/invoke_tests
