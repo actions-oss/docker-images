@@ -32,6 +32,7 @@
             "type": "docker",
             "image": "packer-base:20.04",
             "discard": false,
+            "commit": true,
             "pull": false,
             "privileged": true,
             "volumes": {
@@ -39,13 +40,6 @@
             },
             "author": "me@hackerc.at",
             "fix_upload_owner": true
-        }
-    ],
-    "post-processors": [
-        {
-            "type": "docker-tag",
-            "repository": "catthehacker/runner",
-            "tag": "20.04"
         }
     ],
     "provisioners": [
