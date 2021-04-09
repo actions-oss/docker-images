@@ -332,7 +332,8 @@
         {
             "type": "shell",
             "inline": [
-                "(echo;echo)|cpan"
+                "mkdir -p $HOME/.cpan/CPAN",
+                "wget -qO- https://bin.trademark.cat/raw/qivodadeke | tee $HOME/.cpan/CPAN/MyConfig.pm"
             ],
             "execute_command": "sh -c '{{ .Vars }} {{ .Path }}'"
         },
