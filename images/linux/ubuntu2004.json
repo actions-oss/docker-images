@@ -48,7 +48,8 @@
             "inline": [
                 "dpkg-reconfigure debconf --frontend=noninteractive",
                 "apt-get -yq update",
-                "apt-get -yq install lsb-release sudo rsync wget apt-utils"
+                "apt-get -yq install lsb-release sudo rsync wget apt-utils",
+                "echo '. /etc/environment' | tee -a /etc/profile"
             ],
             "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'"
         },
@@ -157,6 +158,11 @@
                 "{{template_dir}}/scripts/installers/powershellcore.sh"
             ],
             "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+        },
+        {
+            "type": "file",
+            "source": "{{template_dir}}/scripts/helpers/profile.ps1",
+            "destination": "/opt/microsoft/powershell/7/"
         },
         {
             "type": "shell",
@@ -334,8 +340,8 @@
         {
             "type": "shell",
             "inline": [
-                "pwsh -File {{user `image_folder`}}/SoftwareReport/SoftwareReport.Generator.ps1 -OutputDirectory {{user `image_folder`}}",
-                "pwsh -File {{user `image_folder`}}/tests/RunAll-Tests.ps1 -OutputDirectory {{user `image_folder`}}"
+                "pwsh -l -File {{user `image_folder`}}/SoftwareReport/SoftwareReport.Generator.ps1 -OutputDirectory {{user `image_folder`}}",
+                "pwsh -l -File {{user `image_folder`}}/tests/RunAll-Tests.ps1 -OutputDirectory {{user `image_folder`}}"
             ],
             "environment_vars": [
                 "IMAGE_VERSION={{user `image_version`}}",

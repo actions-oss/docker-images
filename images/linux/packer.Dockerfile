@@ -47,11 +47,17 @@ ARG BUILD_TAG=runner-${DISTRIB_RELEASE}
 LABEL org.opencontainers.image.vendor="catthehacker"
 LABEL org.opencontainers.image.authors="me@hackerc.at"
 LABEL org.opencontainers.image.url="https://github.com/catthehacker/virtual-environments"
-LABEL org.opencontainers.image.source="https://github.com/catthehacker/virtual-environments"
+LABEL org.opencontainers.image.source="https://github.com/catthehacker/virtual-environments.git"
 LABEL org.opencontainers.image.version=${BUILD_TAG_VERSION}
 LABEL org.opencontainers.image.title=${BUILD_TAG}
 LABEL org.opencontainers.image.revision=${BUILD_REF}
 
+LABEL runner.user=${RUNNER_USER}
 USER ${RUNNER_USER}:${RUNNER_USER}
+ENV RUNNER_USER=${RUNNER_USER}
+WORKDIR /home/${RUNNER_USER}
 
-WORKDIR /home/runner
+SHELL [ "" ]
+CMD [ "" ]
+
+ENTRYPOINT [ "/usr/bin/sudo", "/usr/bin/login", "-f", "runner" ]
