@@ -51,6 +51,8 @@ jobs:
           - 22.04
           - 20.04
     steps:
+      - name: 'Enable unprivileged user namespace'
+        run: sudo sysctl -w kernel.unprivileged_userns_clone=1
       - uses: actions/setup-go@v5
         with:
           go-version: '>=1.21.0'
@@ -88,7 +90,7 @@ jobs:
 
       - name: Login to Docker Hub
         if: env.PUSH_DOCKER_HUB
-        run: exec buildah login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_TOKEN }} docker.io
+        run: exec buildah login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }} docker.io
 
       - name: Print tag
         run: |
@@ -255,6 +257,8 @@ jobs:
           - PLATFORMS: linux/amd64,linux/arm64
             TYPE: custom
     steps:
+      - name: 'Enable unprivileged user namespace'
+        run: sudo sysctl -w kernel.unprivileged_userns_clone=1
       - uses: actions/setup-go@v5
         with:
           go-version: '>=1.21.0'
@@ -299,7 +303,7 @@ jobs:
 
       - name: Login to Docker Hub
         if: env.PUSH_DOCKER_HUB
-        run: exec buildah login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_TOKEN }} docker.io
+        run: exec buildah login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }} docker.io
 
       - name: Print tag
         run: |
