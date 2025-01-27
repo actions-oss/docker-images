@@ -51,8 +51,6 @@ jobs:
           - 22.04
           - 20.04
     steps:
-      - name: 'Enable unprivileged user namespace'
-        run: sudo sysctl -w kernel.unprivileged_userns_clone=1
       - uses: actions/setup-go@v5
         with:
           go-version: '>=1.21.0'
@@ -61,7 +59,7 @@ jobs:
           sudo apt-get -y -qq update
           sudo apt-get -y install bats btrfs-progs git go-md2man golang libapparmor-dev libglib2.0-dev libgpgme11-dev libseccomp-dev libselinux1-dev make skopeo
           git clone https://github.com/containers/buildah buildah
-          git -C buildah checkout v1.35.0
+          git -C buildah checkout v1.38.0
           make -C buildah buildah
           sudo mkdir -p /usr/local/bin/
           sudo cp "$PWD/buildah/bin"/* /usr/local/bin/
@@ -70,7 +68,7 @@ jobs:
           make -C netavark/
           sudo mkdir -p /usr/local/libexec/podman/
           sudo cp "$PWD/netavark/bin"/* /usr/local/libexec/podman/
-          curl -L https://github.com/containers/crun/releases/download/1.14.3/crun-1.14.3-linux-amd64 --output crun
+          curl -L https://github.com/containers/crun/releases/download/1.19.1/crun-1.19.1-linux-amd64 --output crun
           chmod +x crun
           sudo cp crun /usr/local/bin/crun
           echo "BUILDAH_RUNTIME=/usr/local/bin/crun" >> $GITHUB_ENV
@@ -257,8 +255,6 @@ jobs:
           - PLATFORMS: linux/amd64,linux/arm64
             TYPE: custom
     steps:
-      - name: 'Enable unprivileged user namespace'
-        run: sudo sysctl -w kernel.unprivileged_userns_clone=1
       - uses: actions/setup-go@v5
         with:
           go-version: '>=1.21.0'
