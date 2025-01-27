@@ -1,0 +1,12 @@
+# custom stuff
+.secrets
+.env
+
+# wip
+*.hcl
+
+# mega-linter
+report
+
+# quick local actions for act
+.github/workflows/act.yml
